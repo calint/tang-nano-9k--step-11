@@ -16,10 +16,10 @@ pwd
 # -g2005-sv
 
 iverilog -g2012 -Winfloop -pfileline=1 -o iverilog.vvp -s TestBench TestBench.v \
-    $IDEPTH/simlib/gw1n/prim_sim.v \
+    $IDEPTH/simlib/gw1n/prim_tsim.v \
     $SRCPTH/psram_memory_interface_hs_v2/psram_memory_interface_hs_v2.vo \
     $SRCPTH/gowin_rpll/gowin_rpll.v \
-    $IMPLPTH/tang-nano-9k--step-8.vo
+    $IMPLPTH/tang-nano-9k--step-11.vo
 
 vvp iverilog.vvp
 rm iverilog.vvp

@@ -120,7 +120,7 @@ module Top (
       .data_out_ready(ramio_data_out_ready),
       .busy(ramio_busy),
 
-      .leds(led[4:2]),
+      .led(led[4:2]),
 
       // UART
       .uart_tx(uart_tx),
