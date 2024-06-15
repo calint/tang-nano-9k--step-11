@@ -23,9 +23,9 @@ iverilog -g2005-sv -Winfloop -pfileline=1 -o iverilog.vvp -s TestBench TestBench
     $SRCPTH/RAMIO.sv \
     $SRCPTH/UartTx.sv \
     $SRCPTH/UartRx.sv \
+    $SRCPTH/Core.sv \
     $SRCPTH/emulators/BurstRAM.sv \
-    $SRCPTH/emulators/Flash.sv \
-    $SRCPTH/Top.sv
+    $SRCPTH/emulators/Flash.sv
 
 vvp iverilog.vvp
 rm iverilog.vvp

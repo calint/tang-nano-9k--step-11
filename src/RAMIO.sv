@@ -47,7 +47,7 @@ module RAMIO #(
     output wire busy,
 
     // I/O mapping of LEDs
-    output reg [5:0] leds,
+    output reg [3:0] led,
 
     // UART
     output wire uart_tx,
@@ -226,7 +226,7 @@ module RAMIO #(
 
   always_ff @(posedge clk, negedge rst_n) begin
     if (!rst_n) begin
-      leds <= 6'b11_1111;  // turn off all leds
+      led <= 4'b1111;  // turn off all leds
       uarttx_data <= 0;
       uarttx_go <= 0;
       uartrx_data_read <= 0;
@@ -252,7 +252,7 @@ module RAMIO #(
       end
       // if writing to leds
       if (address == ADDRESS_LEDS && write_type == 2'b01) begin
-        leds <= data_in[5:0];
+        led <= data_in[3:0];
       end
       // if writing to uart
       if (address == ADDRESS_UART_OUT && write_type == 2'b01) begin

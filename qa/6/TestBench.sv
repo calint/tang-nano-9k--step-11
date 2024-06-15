@@ -5,14 +5,18 @@
 `default_nettype none
 
 module TestBench;
-
-  localparam RAM_DEPTH_BITWIDTH = 4;  // 2^4 * 8 B
-
   reg sys_rst_n = 0;
   reg clk = 1;
   localparam clk_tk = 36;
   always #(clk_tk / 2) clk = ~clk;
 
+  localparam RAM_DEPTH_BITWIDTH = 9;  // 2^9 * 8 B = 4096 B
+
+  wire [5:0] led;
+  wire uart_tx;
+  reg uart_rx;
+
+  //------------------------------------------------------------------------
   wire br_cmd;
   wire br_cmd_en;
   wire [RAM_DEPTH_BITWIDTH-1:0] br_addr;
@@ -24,8 +28,8 @@ module TestBench;
   wire br_busy;
 
   BurstRAM #(
-      .DATA_FILE("RAM.mem"),  // initial RAM content
-      .DEPTH_BITWIDTH(RAM_DEPTH_BITWIDTH),  // 2 ^ 4 * 8 B entries
+      .DATA_FILE(""),  // initial RAM content
+      .DEPTH_BITWIDTH(RAM_DEPTH_BITWIDTH),  // 2 ^ x * 8 B entries
       .BURST_COUNT(4),  // 4 * 64 bit data per burst
       .CYCLES_BEFORE_DATA_VALID(6)
   ) burst_ram (
@@ -41,18 +45,15 @@ module TestBench;
       .init_calib(br_init_calib),
       .busy(br_busy)
   );
-
-  reg enable = 0;
-  reg [1:0] write_type = 0;
-  reg [2:0] read_type = 0;
-  reg [31:0] address = 0;
-  wire [31:0] data_out;
-  wire data_out_ready;
-  reg [31:0] data_in = 0;
-  wire busy;
-  wire [5:0] leds = 0;
-  reg uart_tx;
-  reg uart_rx = 0;
+  //------------------------------------------------------------------------
+  wire ramio_enable;
+  wire [1:0] ramio_write_type;
+  wire [2:0] ramio_read_type;
+  wire [31:0] ramio_address;
+  wire [31:0] ramio_data_out;
+  wire ramio_data_out_ready;
+  wire [31:0] ramio_data_in;
+  wire ramio_busy;
 
   RAMIO #(
       .RAM_DEPTH_BITWIDTH(RAM_DEPTH_BITWIDTH),
@@ -63,15 +64,15 @@ module TestBench;
   ) ramio (
       .rst_n(sys_rst_n && br_init_calib),
       .clk(clk),
-      .enable(enable),
-      .write_type(write_type),
-      .read_type(read_type),
-      .address(address),
-      .data_in(data_in),
-      .data_out(data_out),
-      .data_out_ready(data_out_ready),
-      .busy(busy),
-      .leds(leds[5:2]),
+      .enable(ramio_enable),
+      .write_type(ramio_write_type),
+      .read_type(ramio_read_type),
+      .address(ramio_address),
+      .data_in(ramio_data_in),
+      .data_out(ramio_data_out),
+      .data_out_ready(ramio_data_out_ready),
+      .busy(ramio_busy),
+      .led(led[3:0]),
       .uart_tx(uart_tx),
       .uart_rx(uart_rx),
 
@@ -84,8 +85,27 @@ module TestBench;
       .br_rd_data(br_rd_data),  // data out
       .br_rd_data_valid(br_rd_data_valid)  // rd_data is valid
   );
+  //------------------------------------------------------------------------
+  output reg flash_clk;
+  input wire flash_miso;
+  output reg flash_mosi;
+  output reg flash_cs;
 
-  Core core (
+  Flash #(
+      .DATA_FILE("RAM.mem"),
+      .DEPTH_BITWIDTH(12)  // in bytes 2^12 = 4096 B
+  ) dut (
+      .rst_n(sys_rst_n),
+      .clk(flash_clk),
+      .miso(flash_miso),
+      .mosi(flash_mosi),
+      .cs(flash_cs)
+  );
+  //------------------------------------------------------------------------
+  Core #(
+      .STARTUP_WAIT(1),
+      .FLASH_TRANSFER_BYTES_NUM(4096)
+  ) core (
       .rst_n(sys_rst_n && br_init_calib),
       .clk  (clk),
       .led  (led[1:0]),
@@ -104,7 +124,10 @@ module TestBench;
       .flash_mosi(flash_mosi),
       .flash_cs  (flash_cs)
   );
-
+  //------------------------------------------------------------------------
+  assign led[5] = ~ramio_busy;
+  assign led[4] = 0;
+  //------------------------------------------------------------------------
   initial begin
     $dumpfile("log.vcd");
     $dumpvars(0, TestBench);
@@ -119,6 +142,8 @@ module TestBench;
 
     if (br_busy == 0) $display("Test 1 passed");
     else $display("Test 1 FAILED");
+
+    while (core.state != core.STATE_DONE) #clk_tk;
 
     $finish;
 

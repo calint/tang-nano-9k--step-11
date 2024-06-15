@@ -2,7 +2,10 @@
 //
 `default_nettype none
 
-module Core (
+module Core #(
+    parameter STARTUP_WAIT = 1_000_000,
+    parameter FLASH_TRANSFER_BYTES_NUM = 32'h0010_0000
+) (
     input wire clk,
     input wire rst_n,
     output reg [1:0] led,
@@ -35,12 +38,6 @@ module Core (
     output reg  flash_mosi,
     output reg  flash_cs
 );
-
-  // ----------------------------------------------------------
-  localparam STARTUP_WAIT = 1_000_000;
-
-  // localparam FLASH_TRANSFER_BYTES_NUM = 32'h0020_0000;
-  localparam FLASH_TRANSFER_BYTES_NUM = 32'h0010_0000;
 
   // used while reading flash
   reg [23:0] flash_data_to_send;
@@ -191,10 +188,12 @@ module Core (
 
         STATE_TEST_2: begin
           if (ramio_data_out_ready) begin
-            if (ramio_data_out == 32'h00_00_41_20) begin  // addr: 0x4, half-word
-              led[1:0] <= 2'b00;
+            if (ramio_data_out == 32'h00_00_55_37) begin  // addr: 0x4, half-word
+              led <= 2'b00;
+              $display("OK!");
             end else begin
-              led[1:0] <= 2'b11;
+              led <= 2'b11;
+              $display("Not OK!");
             end
             state <= STATE_DONE;
           end

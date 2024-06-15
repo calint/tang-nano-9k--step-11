@@ -50,7 +50,7 @@ module TestBench;
   wire data_out_ready;
   reg [31:0] data_in = 0;
   wire busy;
-  wire [5:0] leds = 0;
+  wire [5:0] led = 0;
   reg uart_tx;
   reg uart_rx = 0;
 
@@ -71,7 +71,7 @@ module TestBench;
       .data_out(data_out),
       .data_out_ready(data_out_ready),
       .busy(busy),
-      .leds(leds),
+      .led(led[3:0]),
       .uart_tx(uart_tx),
       .uart_rx(uart_rx),
 
