@@ -4,7 +4,7 @@
 `timescale 100ps / 100ps
 //
 `default_nettype none
-`define DBG
+// `define DBG
 // `define INFO
 
 module Core #(
