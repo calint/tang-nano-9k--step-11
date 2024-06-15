@@ -92,4 +92,5 @@ module UartTx #(
 endmodule
 
 `undef DBG
+`undef INFO
 `default_nettype wire

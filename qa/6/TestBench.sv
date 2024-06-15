@@ -31,7 +31,8 @@ module TestBench;
       .DATA_FILE(""),  // initial RAM content
       .DEPTH_BITWIDTH(RAM_DEPTH_BITWIDTH),  // 2 ^ x * 8 B entries
       .BURST_COUNT(4),  // 4 * 64 bit data per burst
-      .CYCLES_BEFORE_DATA_VALID(6)
+      .CYCLES_BEFORE_DATA_VALID(6),
+      .CYCLES_BEFORE_INITIATED(0)
   ) burst_ram (
       .clk(clk),
       .rst_n(sys_rst_n),
@@ -103,12 +104,12 @@ module TestBench;
   );
   //------------------------------------------------------------------------
   Core #(
-      .STARTUP_WAIT(1),
+      .STARTUP_WAIT(0),
       .FLASH_TRANSFER_BYTES_NUM(4096)
   ) core (
       .rst_n(sys_rst_n && br_init_calib),
       .clk  (clk),
-      .led  (led[1:0]),
+      .led  (led[4]),
 
       .ramio_enable(ramio_enable),
       .ramio_write_type(ramio_write_type),
@@ -126,7 +127,6 @@ module TestBench;
   );
   //------------------------------------------------------------------------
   assign led[5] = ~ramio_busy;
-  assign led[4] = 0;
   //------------------------------------------------------------------------
   initial begin
     $dumpfile("log.vcd");
@@ -140,10 +140,10 @@ module TestBench;
     // wait for burst RAM to initiate
     while (br_busy) #clk_tk;
 
-    if (br_busy == 0) $display("Test 1 passed");
-    else $display("Test 1 FAILED");
-
     while (core.state != core.STATE_DONE) #clk_tk;
+
+    if (led[4] == 0) $display("Test 1 passed");
+    else $display("Test 1 FAILED");
 
     $finish;
 

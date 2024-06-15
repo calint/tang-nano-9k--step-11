@@ -432,6 +432,6 @@ module Cache #(
 
 endmodule
 
-`default_nettype wire
 `undef DBG
 `undef INFO
+`default_nettype wire

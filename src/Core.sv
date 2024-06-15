@@ -1,14 +1,19 @@
+//
+// RISC-V rv32i reduced core
+//
 `timescale 100ps / 100ps
 //
 `default_nettype none
+`define DBG
+// `define INFO
 
 module Core #(
     parameter STARTUP_WAIT = 1_000_000,
     parameter FLASH_TRANSFER_BYTES_NUM = 32'h0010_0000
 ) (
-    input wire clk,
-    input wire rst_n,
-    output reg [1:0] led,
+    input  wire clk,
+    input  wire rst_n,
+    output reg  led,
 
     // RAMIO
     output reg ramio_enable,
@@ -73,7 +78,7 @@ module Core #(
       ramio_address_next <= 0;
       ramio_data_in <= 0;
 
-      led[1:0] <= 2'b11;
+      led <= 1;
 
       flash_counter <= 0;
       flash_clk <= 0;
@@ -83,11 +88,13 @@ module Core #(
       state <= STATE_INIT_POWER;
 
     end else begin
-
+`ifdef DBG
+      $display("state: %0d", state);
+`endif
       case (state)
 
         STATE_INIT_POWER: begin
-          if (flash_counter > STARTUP_WAIT) begin
+          if (flash_counter >= STARTUP_WAIT) begin
             flash_counter <= 0;
             state <= STATE_LOAD_CMD_TO_SEND;
           end else begin
@@ -189,11 +196,9 @@ module Core #(
         STATE_TEST_2: begin
           if (ramio_data_out_ready) begin
             if (ramio_data_out == 32'h00_00_55_37) begin  // addr: 0x4, half-word
-              led <= 2'b00;
-              $display("OK!");
+              led <= 0;
             end else begin
-              led <= 2'b11;
-              $display("Not OK!");
+              led <= 1;
             end
             state <= STATE_DONE;
           end
@@ -208,4 +213,6 @@ module Core #(
 
 endmodule
 
+`undef DBG
+`undef INFO
 `default_nettype wire
