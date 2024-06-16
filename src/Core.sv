@@ -65,13 +65,14 @@ module Core #(
   localparam STATE_CPU_FETCH = 7;
   localparam STATE_CPU_EXECUTE = 8;
   localparam STATE_CPU_STORE = 9;
+  localparam STATE_CPU_LOAD = 10;
 
   reg [3:0] state = 0;
   reg [3:0] return_state = 0;
 
   // CPU state
   reg [31:0] pc;  // program counter
-  reg [31:0] pc_next; // next instruction
+  reg [31:0] pc_next;  // next instruction
   reg [31:0] ir;  // instruction register (one cycle delay due to ram access)
   reg [4:0] rs1;  // source register 1
   reg [4:0] rs2;  // source register 2
@@ -323,6 +324,28 @@ module Core #(
                 end
               endcase  // case (funct3)
             end
+            7'b0000011: begin  // load
+              ramio_write_type <= 0;
+              ramio_address <= rs1_dat + I_imm12;
+              state <= STATE_CPU_LOAD;
+              case (funct3)
+                3'b000: begin  // LB
+                  ramio_read_type <= 3'b101;  // read sign extended byte
+                end
+                3'b001: begin  // LH
+                  ramio_read_type <= 3'b110;  // read sign extended half word
+                end
+                3'b010: begin  // LW
+                  ramio_read_type <= 3'b111;  // read word (signed)
+                end
+                3'b100: begin  // LBU
+                  ramio_read_type <= 3'b001;  // read unsigned byte
+                end
+                3'b101: begin  // LHU
+                  ramio_read_type <= 3'b010;  // read unsigned half word
+                end
+              endcase  // case (funct3)
+            end
           endcase  // case (opcode)
         end
 
@@ -336,6 +359,21 @@ module Core #(
             state <= STATE_CPU_FETCH;
           end
         end
+
+        STATE_CPU_LOAD: begin
+          if (ramio_data_out_ready) begin
+            // write register
+            rd_we <= 1;
+            rd_wd <= ramio_data_out;
+            // next instruction
+            ramio_enable <= 1;
+            ramio_read_type <= 3'b111;
+            ramio_write_type <= 0;
+            ramio_address <= pc;
+            state <= STATE_CPU_FETCH;
+          end
+        end
+
       endcase
     end
   end

@@ -206,11 +206,11 @@ module RAMIO #(
         3'bx10: begin  // half word
           case (address[1:0])
             2'b00: begin
-              data_out = read_type[2] ? {{16{ram_data_out[15]}}, ram_data_out[15:0]} : {{24{1'b0}}, ram_data_out[15:0]};
+              data_out = read_type[2] ? {{16{ram_data_out[15]}}, ram_data_out[15:0]} : {{16{1'b0}}, ram_data_out[15:0]};
             end
             2'b01: data_out = 0;  // ? error
             2'b10: begin
-              data_out = read_type[2] ? {{16{ram_data_out[31]}}, ram_data_out[31:16]} : {{24{1'b0}}, ram_data_out[31:16]};
+              data_out = read_type[2] ? {{16{ram_data_out[31]}}, ram_data_out[31:16]} : {{16{1'b0}}, ram_data_out[31:16]};
             end
             2'b11: data_out = 0;  // ? error
           endcase

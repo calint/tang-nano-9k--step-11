@@ -269,7 +269,7 @@ module Cache #(
             $display("@(c) cache miss address 0x%h  line: %0d  write enable: %b", address, line_ix,
                      write_enable);
 `endif
-            if (write_enable && line_dirty) begin
+            if (line_dirty) begin
 `ifdef DBG
               $display("@(c) line %0d dirty, evict to RAM address 0x%h", line_ix,
                        cached_line_address);

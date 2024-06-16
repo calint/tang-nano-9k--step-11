@@ -9,6 +9,8 @@ step-wise development towards a RISC-V rv32i implementation supporting cache of 
 [x]   writing to UART address triggers cache fetch line
       => cache.enable added
 [ ] fix truncation warnings
+[ ] update test Cache (write_enable && line_dirty) to (line_dirty)
+[ ] update cores lh from {24{}} to {16{}} 
 [ ] step 11: adapt riscv core (multi-cycle simplest way forward)
 [ ] step 12: pipe-lined core
 

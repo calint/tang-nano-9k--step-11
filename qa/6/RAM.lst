@@ -33,53 +33,56 @@ Disassembly of section .text:
   64:	0109f9b3          	and	x19,x19,x16
   68:	00001a37          	lui	x20,0x1
   6c:	013a2223          	sw	x19,4(x20) # 1004 <lbl_auipc+0xbcc>
-  70:	013a1323          	sh	x19,6(x20)
-  74:	013a03a3          	sb	x19,7(x20)
-  78:	004a0a83          	lb	x21,4(x20)
-  7c:	006a1a83          	lh	x21,6(x20)
-  80:	004a2a83          	lw	x21,4(x20)
-  84:	011a2023          	sw	x17,0(x20)
-  88:	000a4a83          	lbu	x21,0(x20)
-  8c:	002a5a83          	lhu	x21,2(x20)
-  90:	001a8b13          	addi	x22,x21,1
-  94:	36c000ef          	jal	x1,400 <lbl_jal>
-  98:	376b0863          	beq	x22,x22,408 <lbl_beq>
+  70:	004a2a83          	lw	x21,4(x20)
+  74:	013a1323          	sh	x19,6(x20)
+  78:	006a1a83          	lh	x21,6(x20)
+  7c:	013a03a3          	sb	x19,7(x20)
+  80:	007a0a83          	lb	x21,7(x20)
+  84:	004a0a83          	lb	x21,4(x20)
+  88:	006a1a83          	lh	x21,6(x20)
+  8c:	004a2a83          	lw	x21,4(x20)
+  90:	011a2023          	sw	x17,0(x20)
+  94:	000a4a83          	lbu	x21,0(x20)
+  98:	002a5a83          	lhu	x21,2(x20)
+  9c:	001a8b13          	addi	x22,x21,1
+  a0:	360000ef          	jal	x1,400 <lbl_jal>
+  a4:	376b0263          	beq	x22,x22,408 <lbl_beq>
 
-0000009c <lbl1>:
-  9c:	375b1a63          	bne	x22,x21,410 <lbl_bne>
+000000a8 <lbl1>:
+  a8:	375b1463          	bne	x22,x21,410 <lbl_bne>
 
-000000a0 <lbl2>:
-  a0:	376acc63          	blt	x21,x22,418 <lbl_blt>
+000000ac <lbl2>:
+  ac:	376ac663          	blt	x21,x22,418 <lbl_blt>
 
-000000a4 <lbl3>:
-  a4:	375b5e63          	bge	x22,x21,420 <lbl_bge>
+000000b0 <lbl3>:
+  b0:	375b5863          	bge	x22,x21,420 <lbl_bge>
 
-000000a8 <lbl4>:
-  a8:	3929e063          	bltu	x19,x18,428 <lbl_bltu>
+000000b4 <lbl4>:
+  b4:	3729ea63          	bltu	x19,x18,428 <lbl_bltu>
 
-000000ac <lbl5>:
-  ac:	39397263          	bgeu	x18,x19,430 <lbl_bgeu>
+000000b8 <lbl5>:
+  b8:	37397c63          	bgeu	x18,x19,430 <lbl_bgeu>
 
-000000b0 <lbl6>:
-  b0:	355b0c63          	beq	x22,x21,408 <lbl_beq>
-  b4:	355a9a63          	bne	x21,x21,408 <lbl_beq>
-  b8:	375b4063          	blt	x22,x21,418 <lbl_blt>
-  bc:	376ad263          	bge	x21,x22,420 <lbl_bge>
-  c0:	37396463          	bltu	x18,x19,428 <lbl_bltu>
-  c4:	3729f663          	bgeu	x19,x18,430 <lbl_bgeu>
-  c8:	370000ef          	jal	x1,438 <lbl_auipc>
-  cc:	fffc6c13          	ori	x24,x24,-1
-  d0:	05500b93          	addi	x23,x0,85
-  d4:	017c0023          	sb	x23,0(x24)
-  d8:	002a5a83          	lhu	x21,2(x20)
-  dc:	001a8a93          	addi	x21,x21,1
-  e0:	015a2023          	sw	x21,0(x20)
-  e4:	000a2c83          	lw	x25,0(x20)
-  e8:	001c8d13          	addi	x26,x25,1
-  ec:	fffd0d13          	addi	x26,x26,-1
+000000bc <lbl6>:
+  bc:	355b0663          	beq	x22,x21,408 <lbl_beq>
+  c0:	355a9463          	bne	x21,x21,408 <lbl_beq>
+  c4:	355b4a63          	blt	x22,x21,418 <lbl_blt>
+  c8:	356adc63          	bge	x21,x22,420 <lbl_bge>
+  cc:	35396e63          	bltu	x18,x19,428 <lbl_bltu>
+  d0:	3729f063          	bgeu	x19,x18,430 <lbl_bgeu>
+  d4:	364000ef          	jal	x1,438 <lbl_auipc>
+  d8:	fffc6c13          	ori	x24,x24,-1
+  dc:	05500b93          	addi	x23,x0,85
+  e0:	017c0023          	sb	x23,0(x24)
+  e4:	002a5a83          	lhu	x21,2(x20)
+  e8:	001a8a93          	addi	x21,x21,1
+  ec:	015a2023          	sw	x21,0(x20)
+  f0:	000a2c83          	lw	x25,0(x20)
+  f4:	001c8d13          	addi	x26,x25,1
+  f8:	fffd0d13          	addi	x26,x26,-1
 
-000000f0 <lbl_done>:
-  f0:	0000006f          	jal	x0,f0 <lbl_done>
+000000fc <lbl_done>:
+  fc:	0000006f          	jal	x0,fc <lbl_done>
 	...
 
 00000400 <lbl_jal>:
@@ -88,32 +91,32 @@ Disassembly of section .text:
 	...
 
 00000408 <lbl_beq>:
- 408:	c95ff06f          	jal	x0,9c <lbl1>
+ 408:	ca1ff06f          	jal	x0,a8 <lbl1>
  40c:	0000                	.2byte	0x0
 	...
 
 00000410 <lbl_bne>:
- 410:	c91ff06f          	jal	x0,a0 <lbl2>
+ 410:	c9dff06f          	jal	x0,ac <lbl2>
  414:	0000                	.2byte	0x0
 	...
 
 00000418 <lbl_blt>:
- 418:	c8dff06f          	jal	x0,a4 <lbl3>
+ 418:	c99ff06f          	jal	x0,b0 <lbl3>
  41c:	0000                	.2byte	0x0
 	...
 
 00000420 <lbl_bge>:
- 420:	c89ff06f          	jal	x0,a8 <lbl4>
+ 420:	c95ff06f          	jal	x0,b4 <lbl4>
  424:	0000                	.2byte	0x0
 	...
 
 00000428 <lbl_bltu>:
- 428:	c85ff06f          	jal	x0,ac <lbl5>
+ 428:	c91ff06f          	jal	x0,b8 <lbl5>
  42c:	0000                	.2byte	0x0
 	...
 
 00000430 <lbl_bgeu>:
- 430:	c81ff06f          	jal	x0,b0 <lbl6>
+ 430:	c8dff06f          	jal	x0,bc <lbl6>
  434:	0000                	.2byte	0x0
 	...
 

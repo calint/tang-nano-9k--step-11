@@ -10,7 +10,7 @@ module TestBench;
   localparam clk_tk = 36;
   always #(clk_tk / 2) clk = ~clk;
 
-  localparam RAM_DEPTH_BITWIDTH = 9;  // 2^9 * 8 B = 4096 B
+  localparam RAM_DEPTH_BITWIDTH = 10;  // 2^10 * 8 B = 8192 B
 
   wire [5:0] led;
   wire uart_tx;
@@ -332,6 +332,71 @@ module TestBench;
     if (core.registers.mem[20] == 32'h0000_1000) $display("Test 26 passed");
     else $display("Test 26 FAILED");
 
+    // 6c: 013a2223 sw x19,4(x20) # [1004] = 0x0000_0001
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+
+    // 70: 004a2a83 lw x21,4(x20) # x21 = [1004] = 0x0000_0001
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    if (core.registers.mem[21] == 1) $display("Test 27 passed");
+    else $display("Test 27 FAILED");
+
+    // 74: 013a1323 sh x19,6(x20) # [1006] = 0x0001
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+
+    // 78: 006a1a83 lh x21,6(x20) # x21 = [1006] = 0x00001
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    if (core.registers.mem[21] == 1) $display("Test 28 passed");
+    else $display("Test 28 FAILED");
+
+    // 7c: 013a03a3 sb x19,7(x20) # [1007] = 0x01
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+
+    // 80: 007a0a83 lb x21,7(x20) # x21 = [1007] = 0x01
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    if (core.registers.mem[21] == 1) $display("Test 29 passed");
+    else $display("Test 29 FAILED");
+
+    // 84: 004a0a83 lb x21,4(x20) # x21 = [1004] = 0x01
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    if (core.registers.mem[21] == 1) $display("Test 30 passed");
+    else $display("Test 30 FAILED");
+
+    // 88: 006a1a83 lh sx21,6(x20) # x21 = [1006] = 0x0101
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    if (core.registers.mem[21] == 32'h0000_01_01) $display("Test 31 passed");
+    else $display("Test 31 FAILED");
+
+    // 8c: 004a2a83 lw x21,4(x20) # x21 = [1004] = 0x01010001
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    if (core.registers.mem[21] == 32'h0101_0001) $display("Test 32 passed");
+    else $display("Test 32 FAILED");
 
     $finish;
 
