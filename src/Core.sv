@@ -55,19 +55,38 @@ module Core #(
   // used while reading flash to increment 'cache_address'
   reg [31:0] ramio_address_next;
 
-  localparam STATE_INIT_POWER = 0;
-  localparam STATE_LOAD_CMD_TO_SEND = 1;
-  localparam STATE_SEND = 2;
-  localparam STATE_LOAD_ADDRESS_TO_SEND = 3;
-  localparam STATE_READ_DATA = 4;
-  localparam STATE_START_WRITE = 5;
-  localparam STATE_WRITE = 6;
-  localparam STATE_TEST_1 = 7;
-  localparam STATE_TEST_2 = 8;
-  localparam STATE_DONE = 9;
+  localparam STATE_BOOT_INIT_POWER = 0;
+  localparam STATE_BOOT_LOAD_CMD_TO_SEND = 1;
+  localparam STATE_BOOT_SEND = 2;
+  localparam STATE_BOOT_LOAD_ADDRESS_TO_SEND = 3;
+  localparam STATE_BOOT_READ_DATA = 4;
+  localparam STATE_BOOT_START_WRITE = 5;
+  localparam STATE_BOOT_WRITE = 6;
+  localparam STATE_CPU_FETCH = 7;
+  localparam STATE_CPU_EXECUTE = 8;
 
   reg [3:0] state = 0;
   reg [3:0] return_state = 0;
+
+  // CPU state
+  reg [31:0] ir;  // instruction register (one cycle delay due to ram access)
+  reg [4:0] rs1;  // source register 1
+  reg [4:0] rs2;  // source register 2
+  reg [4:0] rd;  // destination register
+  reg [6:0] opcode;
+  reg [2:0] funct3;
+  reg [6:0] funct7;
+  wire signed [31:0] I_imm12 = {{20{ir[31]}}, ir[31:20]};
+  wire [31:0] U_imm20 = {ir[31:12], {12{1'b0}}};
+  wire signed [31:0] S_imm12 = {{20{ir[31]}}, ir[31:25], ir[11:7]};
+  wire signed [31:0] B_imm12 = {{20{ir[31]}}, ir[7], ir[30:25], ir[11:8], 1'b0};
+  wire signed [31:0] J_imm20 = {{12{ir[31]}}, ir[19:12], ir[20], ir[30:21], 1'b0};
+
+  wire [31:0] rs1_dat;  // register 'rs1' data
+  wire [31:0] rs2_dat;  // register 'rs2' data
+  reg [31:0] rd_wd;  // register write data
+  reg rd_we;  // register write enable
+  //
 
   always_ff @(posedge clk, negedge rst_n) begin
     if (!rst_n) begin
@@ -85,7 +104,7 @@ module Core #(
       flash_mosi <= 0;
       flash_cs <= 1;
 
-      state <= STATE_INIT_POWER;
+      state <= STATE_BOOT_INIT_POWER;
 
     end else begin
 `ifdef DBG
@@ -93,32 +112,32 @@ module Core #(
 `endif
       case (state)
 
-        STATE_INIT_POWER: begin
+        STATE_BOOT_INIT_POWER: begin
           if (flash_counter >= STARTUP_WAIT) begin
             flash_counter <= 0;
-            state <= STATE_LOAD_CMD_TO_SEND;
+            state <= STATE_BOOT_LOAD_CMD_TO_SEND;
           end else begin
             flash_counter <= flash_counter + 1;
           end
         end
 
-        STATE_LOAD_CMD_TO_SEND: begin
+        STATE_BOOT_LOAD_CMD_TO_SEND: begin
           flash_cs <= 0;
           flash_data_to_send[23-:8] <= 3;  // command 3: read
           flash_bits_to_send <= 8;
-          state <= STATE_SEND;
-          return_state <= STATE_LOAD_ADDRESS_TO_SEND;
+          state <= STATE_BOOT_SEND;
+          return_state <= STATE_BOOT_LOAD_ADDRESS_TO_SEND;
         end
 
-        STATE_LOAD_ADDRESS_TO_SEND: begin
+        STATE_BOOT_LOAD_ADDRESS_TO_SEND: begin
           flash_data_to_send <= 0;  // address 0x0
           flash_bits_to_send <= 24;
           flash_current_byte_num <= 0;
-          state <= STATE_SEND;
-          return_state <= STATE_READ_DATA;
+          state <= STATE_BOOT_SEND;
+          return_state <= STATE_BOOT_READ_DATA;
         end
 
-        STATE_SEND: begin
+        STATE_BOOT_SEND: begin
           if (flash_counter == 0) begin
             // at clock to low
             flash_clk <= 0;
@@ -136,7 +155,7 @@ module Core #(
           end
         end
 
-        STATE_READ_DATA: begin
+        STATE_BOOT_READ_DATA: begin
           if (!flash_counter[0]) begin
             flash_clk <= 0;
             flash_counter <= flash_counter + 1;
@@ -145,7 +164,7 @@ module Core #(
               flash_data_in[flash_current_byte_num] <= flash_current_byte_out;
               flash_current_byte_num <= flash_current_byte_num + 1;
               if (flash_current_byte_num == 3) begin
-                state <= STATE_START_WRITE;
+                state <= STATE_BOOT_START_WRITE;
               end
             end
           end else begin
@@ -155,7 +174,7 @@ module Core #(
           end
         end
 
-        STATE_START_WRITE: begin
+        STATE_BOOT_START_WRITE: begin
           if (!ramio_busy) begin
             ramio_enable <= 1;
             ramio_read_type <= 0;
@@ -165,51 +184,137 @@ module Core #(
             ramio_data_in <= {
               flash_data_in[3], flash_data_in[2], flash_data_in[1], flash_data_in[0]
             };
-            state <= STATE_WRITE;
+            state <= STATE_BOOT_WRITE;
           end
         end
 
-        STATE_WRITE: begin
+        STATE_BOOT_WRITE: begin
           if (!ramio_busy) begin
             ramio_enable <= 0;
             flash_current_byte_num <= 0;
             if (ramio_address_next < FLASH_TRANSFER_BYTES_NUM) begin
-              state <= STATE_READ_DATA;
+              state <= STATE_BOOT_READ_DATA;
             end else begin
               flash_cs <= 1;
-              state <= STATE_TEST_1;
+
+              // boot address
+              ramio_enable <= 1;
+              ramio_read_type <= 3'b111;
+              ramio_write_type <= 0;
+              ramio_address <= 0;
+
+              ramio_address_next <= 0;
+              ir <= 0;
+
+              state <= STATE_CPU_FETCH;
             end
           end
         end
 
-        STATE_TEST_1: begin
-          if (!ramio_busy) begin
-            // read unsigned half-word (16 bits) from address 0x4
-            ramio_enable <= 1;
-            ramio_read_type <= 3'b010;
-            ramio_write_type <= 0;
-            ramio_address <= 4;
-            state <= STATE_TEST_2;
-          end
-        end
-
-        STATE_TEST_2: begin
+        STATE_CPU_FETCH: begin
           if (ramio_data_out_ready) begin
-            if (ramio_data_out == 32'h00_00_55_37) begin  // addr: 0x4, half-word
-              led <= 0;
-            end else begin
-              led <= 1;
-            end
-            state <= STATE_DONE;
+
+`ifdef DBG
+            $display("fetched: %h", ramio_data_out);
+`endif
+
+            ir <= ramio_data_out;
+            rs1 <= ramio_data_out[19:15];  // source register 1
+            rs2 <= ramio_data_out[24:20];  // source register 2
+            rd <= ramio_data_out[11:7];  // destination register
+            opcode <= ramio_data_out[6:0];
+            funct3 <= ramio_data_out[14:12];
+            funct7 <= ramio_data_out[31:25];
+            state <= STATE_CPU_EXECUTE;
           end
         end
 
-        STATE_DONE: begin
+        STATE_CPU_EXECUTE: begin
+          ramio_enable <= 1;
+          ramio_read_type <= 3'b111;
+          ramio_write_type <= 0;
+          ramio_address <= ramio_address + 4;
+          state <= STATE_CPU_FETCH;
+          case (opcode)
+            7'b0110111: begin  // LUI
+              rd_wd <= U_imm20;
+              rd_we <= 1;
+            end
+            7'b0010011: begin  // logical ops immediate
+              rd_we <= 1;
+              case (funct3)
+                3'b000: begin  // ADDI
+                  rd_wd <= rs1_dat + I_imm12;
+                end
+                3'b010: begin  // SLTI
+                  rd_wd <= rs1_dat < I_imm12;
+                end
+                3'b011: begin  // SLTIU
+                  rd_wd <= $unsigned(rs1_dat) < $unsigned(I_imm12);
+                end
+                3'b100: begin  // XORI
+                  rd_wd <= rs1_dat ^ I_imm12;
+                end
+                3'b110: begin  // ORI
+                  rd_wd <= rs1_dat | I_imm12;
+                end
+                3'b111: begin  // ANDI
+                  rd_wd <= rs1_dat & I_imm12;
+                end
+                3'b001: begin  // SLLI
+                  rd_wd <= rs1_dat << rs2;
+                end
+                3'b101: begin  // SRLI and SRAI
+                  rd_wd <= ir[30] ? rs1_dat >>> rs2 : rs1_dat >> rs2;
+                end
+              endcase  // case (funct3)
+            end
+            7'b0110011: begin  // logical ops
+              rd_we <= 1;
+              case (funct3)
+                3'b000: begin  // ADD and SUB
+                  rd_wd <= ir[30] ? rs1_dat - rs2_dat : rs1_dat + rs2_dat;
+                end
+                3'b001: begin  // SLL
+                  rd_wd <= rs1_dat << rs2_dat[4:0];
+                end
+                3'b010: begin  // SLT
+                  rd_wd <= rs1_dat < rs2_dat;
+                end
+                3'b011: begin  // SLTU
+                  rd_wd <= $unsigned(rs1_dat) < $unsigned(rs2_dat);
+                end
+                3'b100: begin  // XOR
+                  rd_wd <= rs1_dat ^ rs2_dat;
+                end
+                3'b101: begin  // SRL and SRA
+                  rd_wd <= ir[30] ? rs1_dat >>> rs2_dat[4:0] : rs1_dat >> rs2_dat[4:0];
+                end
+                3'b110: begin  // OR
+                  rd_wd <= rs1_dat | rs2_dat;
+                end
+                3'b111: begin  // AND
+                  rd_wd <= rs1_dat & rs2_dat;
+                end
+              endcase  // case (funct3)
+            end
+          endcase  // case (opcode)
         end
 
       endcase
     end
   end
+
+  Registers registers (
+      .clk(clk),
+      .rs1(rs1),
+      .rd1(rs1_dat),
+      .rs2(rs2),
+      .rd(rd),
+      .rd2(rs2_dat),
+      .rd_wd(rd_wd),
+      .rd_we(rd_we)
+  );
 
 endmodule
 

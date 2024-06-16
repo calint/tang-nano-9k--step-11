@@ -140,11 +140,45 @@ module TestBench;
     // wait for burst RAM to initiate
     while (br_busy) #clk_tk;
 
-    while (core.state != core.STATE_DONE) #clk_tk;
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
 
-    if (led[4] == 0) $display("Test 1 passed");
+    for (int i = 0; i < 16; i++) begin
+      $display("%0d: %h", i, burst_ram.data[i]);
+    end
+
+    // 0: 00000013 addi x0,x0,0
+    #clk_tk;
+    #clk_tk;
+
+    // 4: 12345537 lui x10,0x12345
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    if (core.registers.mem[10] == 32'h1234_5000) $display("Test 1 passed");
     else $display("Test 1 FAILED");
 
+    // 8: 67850513 addi x10,x10,1656 # 12345678
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    if (core.registers.mem[10] == 32'h1234_5678) $display("Test 2 passed");
+    else $display("Test 2 FAILED");
+
+    // c: 00300593 addi x11,x0,3
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    if (core.registers.mem[11] == 32'h3) $display("Test 3 passed");
+    else $display("Test 3 FAILED");
+
+    // 10: 0045a613 slti x12,x11,4
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    if (core.registers.mem[12] == 32'h1) $display("Test 4 passed");
+    else $display("Test 4 FAILED");
+    
+    
     $finish;
 
   end
