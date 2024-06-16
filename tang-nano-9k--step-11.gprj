@@ -9,6 +9,7 @@
         <File path="src/Cache.sv" type="file.verilog" enable="1"/>
         <File path="src/Core.sv" type="file.verilog" enable="1"/>
         <File path="src/RAMIO.sv" type="file.verilog" enable="1"/>
+        <File path="src/Registers.sv" type="file.verilog" enable="1"/>
         <File path="src/Top.sv" type="file.verilog" enable="1"/>
         <File path="src/UartRx.sv" type="file.verilog" enable="1"/>
         <File path="src/UartTx.sv" type="file.verilog" enable="1"/>
