@@ -143,7 +143,7 @@ module Top (
   Core core (
       .rst_n(sys_rst_n && rpll_lock && br_init_calib),
       .clk  (br_clk_out),
-      .led  (led[1:0]),
+      .led  (led[0]),
 
       .ramio_enable(ramio_enable),
       .ramio_write_type(ramio_write_type),

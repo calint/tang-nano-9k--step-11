@@ -66,8 +66,8 @@ module Core #(
   localparam STATE_TEST_2 = 8;
   localparam STATE_DONE = 9;
 
-  reg [4:0] state = 0;
-  reg [4:0] return_state = 0;
+  reg [3:0] state = 0;
+  reg [3:0] return_state = 0;
 
   always_ff @(posedge clk, negedge rst_n) begin
     if (!rst_n) begin
