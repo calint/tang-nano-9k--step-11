@@ -11,7 +11,7 @@ step-wise development towards a RISC-V rv32i implementation supporting cache of 
 [ ] Cache: COMMAND_DELAY_INTERVAL
 [ ] fix truncation warnings
 [ ] update test Cache (write_enable && line_dirty) to (line_dirty)
-[ ] update cores lh from {24{}} to {16{}} 
+[ ] update RAMIO issue lh from {24{}} to {16{}} 
 [ ] step 11: adapt riscv core (multi-cycle simplest way forward)
 [ ] step 12: pipe-lined core
 

@@ -1,5 +1,8 @@
 #!/bin/sh
 #
+# * compiles specified source to risc-v binary
+# * extracts 'mem' file from binary to be included by vivado
+#
 # tools used:
 #       riscv32-unknown-elf-gcc: (g2ee5e430018) 12.2.0
 #   riscv32-unknown-elf-objcopy: GNU objcopy (GNU Binutils) 2.40.0.20230214
@@ -21,40 +24,29 @@
 set -e
 
 PATH=$PATH:~/riscv/install/rv32i/bin
-BIN=os
+SRC=$1
+BIN=${SRC%.*}
 
+# -mstrict-align \
 riscv32-unknown-elf-gcc \
-	-O0 \
-	-g \
+	-O2 \
 	-nostartfiles \
 	-ffreestanding \
 	-nostdlib \
-	-fno-toplevel-reorder \
 	-fno-pic \
 	-march=rv32i \
 	-mabi=ilp32 \
-	-mstrict-align \
 	-Wfatal-errors \
 	-Wall -Wextra -pedantic \
-	-Wconversion \
-	-Wshadow \
 	-Wl,-Ttext=0x0 \
 	-Wl,--no-relax \
-	os_start.S os.c -o $BIN
-
-#	-Wpadded \
+	-fno-toplevel-reorder \
+	$SRC -o $BIN
 
 riscv32-unknown-elf-objcopy $BIN -O binary $BIN.bin
-
-chmod -x $BIN.bin
-
-riscv32-unknown-elf-objdump -Mnumeric,no-aliases --source-comment -Sr $BIN > $BIN.lst
-# riscv32-unknown-elf-objdump --source-comment -Sr $BIN > $BIN.lst
-
-# print 4 bytes at a time as hex in little endian mode
-xxd -c 4 -e $BIN.bin | awk '{print $2}' > $BIN.mem
-xxd -c 1 -e $BIN.bin | awk '{print $2}' > $BIN.flash
-
+riscv32-unknown-elf-objdump -Mnumeric,no-aliases -dr $BIN > $BIN.lst
+xxd -p -c 1 -e $BIN.bin | awk '{print $2}' > $BIN.mem
+ls -la $BIN.bin $BIN.mem $BIN.lst
 rm $BIN
+rm $BIN.bin
 
-ls -l $BIN.bin $BIN.lst $BIN.mem $BIN.flash
