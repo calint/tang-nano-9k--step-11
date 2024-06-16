@@ -64,11 +64,14 @@ module Core #(
   localparam STATE_BOOT_WRITE = 6;
   localparam STATE_CPU_FETCH = 7;
   localparam STATE_CPU_EXECUTE = 8;
+  localparam STATE_CPU_STORE = 9;
 
   reg [3:0] state = 0;
   reg [3:0] return_state = 0;
 
   // CPU state
+  reg [31:0] pc;  // program counter
+  reg [31:0] pc_next; // next instruction
   reg [31:0] ir;  // instruction register (one cycle delay due to ram access)
   reg [4:0] rs1;  // source register 1
   reg [4:0] rs2;  // source register 2
@@ -82,8 +85,8 @@ module Core #(
   wire signed [31:0] B_imm12 = {{20{ir[31]}}, ir[7], ir[30:25], ir[11:8], 1'b0};
   wire signed [31:0] J_imm20 = {{12{ir[31]}}, ir[19:12], ir[20], ir[30:21], 1'b0};
 
-  wire [31:0] rs1_dat;  // register 'rs1' data
-  wire [31:0] rs2_dat;  // register 'rs2' data
+  wire signed [31:0] rs1_dat;  // register 'rs1' data
+  wire signed [31:0] rs2_dat;  // register 'rs2' data
   reg [31:0] rd_wd;  // register write data
   reg rd_we;  // register write enable
   //
@@ -96,6 +99,7 @@ module Core #(
       ramio_address <= 0;
       ramio_address_next <= 0;
       ramio_data_in <= 0;
+      pc <= 0;
 
       led <= 1;
 
@@ -202,8 +206,8 @@ module Core #(
               ramio_read_type <= 3'b111;
               ramio_write_type <= 0;
               ramio_address <= 0;
-
-              ramio_address_next <= 0;
+              pc <= 0;
+              pc_next <= 4;
               ir <= 0;
 
               state <= STATE_CPU_FETCH;
@@ -225,16 +229,20 @@ module Core #(
             opcode <= ramio_data_out[6:0];
             funct3 <= ramio_data_out[14:12];
             funct7 <= ramio_data_out[31:25];
+            pc <= pc_next;
             state <= STATE_CPU_EXECUTE;
           end
         end
 
         STATE_CPU_EXECUTE: begin
+          // default next state is FETCH
           ramio_enable <= 1;
           ramio_read_type <= 3'b111;
           ramio_write_type <= 0;
-          ramio_address <= ramio_address + 4;
+          ramio_address <= pc;
+          pc_next <= pc + 4;
           state <= STATE_CPU_FETCH;
+
           case (opcode)
             7'b0110111: begin  // LUI
               rd_wd <= U_imm20;
@@ -298,9 +306,36 @@ module Core #(
                 end
               endcase  // case (funct3)
             end
+            7'b0100011: begin  // store
+              ramio_read_type <= 0;
+              ramio_address <= rs1_dat + S_imm12;
+              ramio_data_in <= rs2_dat;
+              state <= STATE_CPU_STORE;
+              case (funct3)
+                3'b000: begin  // SB
+                  ramio_write_type <= 2'b01;  // write byte
+                end
+                3'b001: begin  // SH
+                  ramio_write_type <= 2'b10;  // write half word
+                end
+                3'b010: begin  // SW
+                  ramio_write_type <= 2'b11;  // write word
+                end
+              endcase  // case (funct3)
+            end
           endcase  // case (opcode)
         end
 
+        STATE_CPU_STORE: begin
+          if (!ramio_busy) begin
+            // next instruction
+            ramio_enable <= 1;
+            ramio_read_type <= 3'b111;
+            ramio_write_type <= 0;
+            ramio_address <= pc;
+            state <= STATE_CPU_FETCH;
+          end
+        end
       endcase
     end
   end
