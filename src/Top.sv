@@ -37,10 +37,13 @@ module Top (
   Gowin_rPLL rpll (
       .clkin(rpll_clkin),  // 27 MHz
       .lock(rpll_lock),
-      .clkout(rpll_clkout),  // 81 MHz
-      .clkoutp(rpll_clkoutp),  // clkout 81 MHz 90 degrees phased
-      .clkoutd(rpll_clkoutd)  // clkout / 4 = 20.25 MHz (IPUG943-1.2E page 15)
+      .clkout(rpll_clkout),  // 75 MHz
+      .clkoutp(rpll_clkoutp),  // clkout 75 MHz 90 degrees phased
+      .clkoutd(rpll_clkoutd)  // clkout / 4 = 18.75 MHz (IPUG943-1.2E page 15)
   );
+
+  localparam FREQ = 37_500_000;
+  localparam BAUD = 9600;
 
   // ----------------------------------------------------------
   // -- PSRAM_Memory_Interface_HS_V2_Top
@@ -104,8 +107,8 @@ module Top (
       .RAM_DEPTH_BITWIDTH(RAM_DEPTH_BITWIDTH),
       .RAM_ADDRESSING_MODE(0),  // addressing 8 bit words
       .CACHE_LINE_IX_BITWIDTH(5),
-      .CLK_FREQ(20_250_000),
-      .BAUD_RATE(9_600)
+      .CLK_FREQ(FREQ),
+      .BAUD_RATE(BAUD)
   ) ramio (
       .rst_n(sys_rst_n && rpll_lock && br_init_calib),
       .clk  (br_clk_out),
