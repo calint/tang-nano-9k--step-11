@@ -142,9 +142,9 @@ module TestBench;
 
     while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
 
-    for (int i = 0; i < 16; i++) begin
-      $display("%0d: %h", i, burst_ram.data[i]);
-    end
+    // for (int i = 0; i < 16; i++) begin
+    //   $display("%0d: %h", i, burst_ram.data[i]);
+    // end
 
     // 0: 00000013 addi x0,x0,0
     #clk_tk;

@@ -52,7 +52,7 @@ module TestBench;
   wire busy;
   wire [5:0] led = 0;
   reg uart_tx;
-  reg uart_rx = 0;
+  reg uart_rx = 1;
 
   RAMIO #(
       .RAM_DEPTH_BITWIDTH(RAM_DEPTH_BITWIDTH),
@@ -269,7 +269,7 @@ module TestBench;
     #clk_tk;
 
     // start bit
-    uart_rx <= 1;
+    uart_rx <= 0;
     #clk_tk;
     // bit 0
     uart_rx <= 0;
@@ -301,10 +301,12 @@ module TestBench;
     uart_rx <= 1;
     #clk_tk;
 
-    if (ramio.uartrx_dr && ramio.uartrx_data_read == 8'h55) $display("Test 19 passed");
+    if (ramio.uartrx_dr && ramio.uartrx_data == 8'haa) $display("Test 19 passed");
     else $display("Test 19 FAILED");
 
-    if (data_out == 8'h55) $display("Test 20 passed");
+    #clk_tk; // RAMIO transfers data from UartRx
+
+    if (data_out == 8'haa) $display("Test 20 passed");
     else $display("Test 20 FAILED");
 
     uart_rx <= 0;

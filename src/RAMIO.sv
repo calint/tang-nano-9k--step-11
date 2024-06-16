@@ -88,8 +88,8 @@ module RAMIO #(
     ram_enable = 0;
     ram_write_enable = 0;
     ram_data_in = 0;
-    if (address == ADDRESS_UART_OUT && write_type == 3'b001) begin
-      // write to UART, do not trigger cache
+    if (address == ADDRESS_UART_OUT || address == ADDRESS_UART_IN || address == ADDRESS_LEDS) begin
+      // don't trigger cache when accessing I/O
     end else begin
       // enable RAM
       ram_enable = 1;

@@ -8,6 +8,7 @@ step-wise development towards a RISC-V rv32i implementation supporting cache of 
 [x] step 10: implement ram interface
 [x]   writing to UART address triggers cache fetch line
       => cache.enable added
+[ ] Cache: COMMAND_DELAY_INTERVAL
 [ ] fix truncation warnings
 [ ] update test Cache (write_enable && line_dirty) to (line_dirty)
 [ ] update cores lh from {24{}} to {16{}} 

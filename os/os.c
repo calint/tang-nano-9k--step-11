@@ -75,6 +75,7 @@ void action_take(entity_id eid, name obj);
 void input(input_buffer *buf);
 void handle_input(entity_id eid, input_buffer *buf);
 bool strings_equal(const char *s1, const char *s2);
+void print_pointer_address(void *ptr);
 
 void run() {
   unsigned char active_entity = 1;
@@ -82,6 +83,10 @@ void run() {
   inbuf.ix = 0;
 
   uart_send_str(hello);
+  print_pointer_address((void *)0xabcdef12);
+//  uart_send_str(new_line);
+  print_pointer_address((void *)locations[1].name);
+//  uart_send_str(new_line);
 
   while (1) {
     const entity *ent = &entities[active_entity];
@@ -95,6 +100,18 @@ void run() {
       active_entity = 2;
     else
       active_entity = 1;
+  }
+}
+
+void print_pointer_address(void *ptr) {
+  uart_send_char('0');
+  uart_send_char('x');
+  const unsigned address = (unsigned)ptr;
+  for (int i = (sizeof(void *) * 2) - 1; i >= 0; i--) {
+    const int shift = i * 4;
+    int hex_digit = (address >> shift) & 0xF;
+    uart_send_char(
+        (char)(hex_digit < 10 ? '0' + hex_digit : 'a' + (hex_digit - 10)));
   }
 }
 
