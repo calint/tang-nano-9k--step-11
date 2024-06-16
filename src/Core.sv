@@ -207,9 +207,8 @@ module Core #(
               ramio_read_type <= 3'b111;
               ramio_write_type <= 0;
               ramio_address <= 0;
+
               pc <= 0;
-              pc_next <= 4;
-              ir <= 0;
 
               state <= STATE_CPU_FETCH;
             end
@@ -230,18 +229,18 @@ module Core #(
             opcode <= ramio_data_out[6:0];
             funct3 <= ramio_data_out[14:12];
             funct7 <= ramio_data_out[31:25];
-            pc <= pc_next;
+            pc_next <= pc + 4;  // assume next instruction
             state <= STATE_CPU_EXECUTE;
           end
         end
 
         STATE_CPU_EXECUTE: begin
-          // default next state is FETCH
+          // default next state is FETCH next instruction
           ramio_enable <= 1;
           ramio_read_type <= 3'b111;
           ramio_write_type <= 0;
-          ramio_address <= pc;
-          pc_next <= pc + 4;
+          ramio_address <= pc_next;
+          pc <= pc_next;
           state <= STATE_CPU_FETCH;
 
           case (opcode)
@@ -343,6 +342,62 @@ module Core #(
                 end
                 3'b101: begin  // LHU
                   ramio_read_type <= 3'b010;  // read unsigned half word
+                end
+              endcase  // case (funct3)
+            end
+            7'b0010111: begin  // AUIPC
+              rd_wd <= pc + U_imm20;
+              rd_we <= 1;
+            end
+            7'b1101111: begin  // JAL
+              rd_wd <= pc + 4;
+              rd_we <= 1;
+              ramio_address <= pc + J_imm20;
+              pc <= pc + J_imm20;
+            end
+            7'b1100111: begin  // JALR
+              rd_wd <= pc + 4;
+              rd_we <= 1;
+              ramio_address <= rs1_dat + I_imm12;
+              pc <= rs1_dat + I_imm12;
+            end
+            7'b1100011: begin  // branches
+              case (funct3)
+                3'b000: begin  // BEQ
+                  if (rs1_dat == rs2_dat) begin
+                    ramio_address <= pc + B_imm12;
+                    pc <= pc + B_imm12;
+                  end
+                end
+                3'b001: begin  // BNE
+                  if (rs1_dat != rs2_dat) begin
+                    ramio_address <= pc + B_imm12;
+                    pc <= pc + B_imm12;
+                  end
+                end
+                3'b100: begin  // BLT
+                  if (rs1_dat < rs2_dat) begin
+                    ramio_address <= pc + B_imm12;
+                    pc <= pc + B_imm12;
+                  end
+                end
+                3'b101: begin  // BGE
+                  if (rs1_dat >= rs2_dat) begin
+                    ramio_address <= pc + B_imm12;
+                    pc <= pc + B_imm12;
+                  end
+                end
+                3'b110: begin  // BLTU
+                  if ($unsigned(rs1_dat) < $unsigned(rs2_dat)) begin
+                    ramio_address <= pc + B_imm12;
+                    pc <= pc + B_imm12;
+                  end
+                end
+                3'b111: begin  // BGEU
+                  if ($unsigned(rs1_dat) >= $unsigned(rs2_dat)) begin
+                    ramio_address <= pc + B_imm12;
+                    pc <= pc + B_imm12;
+                  end
                 end
               endcase  // case (funct3)
             end

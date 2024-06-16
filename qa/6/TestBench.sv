@@ -398,6 +398,201 @@ module TestBench;
     if (core.registers.mem[21] == 32'h0101_0001) $display("Test 32 passed");
     else $display("Test 32 FAILED");
 
+    // 90: 011a2023 sw x17,0(x20) # [1000] = 0xffff_ffff
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+
+    // 94: 000a4a83 lbu x21,0(x20) # x21 = [1000] = 0xff
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    if (core.registers.mem[21] == 32'h0000_00ff) $display("Test 33 passed");
+    else $display("Test 33 FAILED");
+
+    // 98: 002a5a83 lhu x21,2(x20) # x21 = [1000] = 0xffff
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    if (core.registers.mem[21] == 32'h0000_ffff) $display("Test 34 passed");
+    else $display("Test 34 FAILED");
+
+    // 9c: 001a8b13 addi x22,x21,1 # x22 = 0xffff + 1 = 0x1_0000
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.registers.mem[22] == 32'h0001_0000) $display("Test 35 passed");
+    else $display("Test 35 FAILED");
+
+    // a0: 360000ef jal x1,400 <lbl_jal>
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_0400) $display("Test 36 passed");
+    else $display("Test 36 FAILED");
+
+    // 400: 00008067 jalr x0,0(x1)
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00a4) $display("Test 37 passed");
+    else $display("Test 37 FAILED");
+
+    // a4: 376b0263  beq x22,x22,408 <lbl_beq> # # x22 == x22 -> branch taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_0408) $display("Test 38 passed");
+    else $display("Test 38 FAILED");
+
+    // 408: ca1ff06f jal x0,a8 <lbl1>
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00a8) $display("Test 39 passed");
+    else $display("Test 39 FAILED");
+
+    // a8: 375b1463 bne x22,x21,410 <lbl_bne> # 0x1_0000 != 0xffff -> branch taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_0410) $display("Test 40 passed");
+    else $display("Test 40 FAILED");
+
+    // 410: c9dff06f jal x0,ac <lbl2>
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00ac) $display("Test 41 passed");
+    else $display("Test 41 FAILED");
+
+    // ac: 376ac663 blt x21,x22,418 <lbl_blt> # 0xffff < 0x1_0000 -> branch taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_0418) $display("Test 42 passed");
+    else $display("Test 42 FAILED");
+
+    // 418: c99ff06f jal x0,b0 <lbl3>
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00b0) $display("Test 43 passed");
+    else $display("Test 43 FAILED");
+
+    // b0: 375b5863 bge x22,x21,420 <lbl_bge> # 0x1_0000 >= 0xffff -> branch taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_0420) $display("Test 44 passed");
+    else $display("Test 44 FAILED");
+
+    // 420: c95ff06f jal x0,b4 <lbl4> 
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00b4) $display("Test 45 passed");
+    else $display("Test 45 FAILED");
+
+    // b4: 3729ea63 bltu x19,x18,428 <lbl_bltu> # 1 < 0xffff_ffff -> branch taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_0428) $display("Test 46 passed");
+    else $display("Test 46 FAILED");
+
+    // 428: c91ff06f jal x0,b8 <lbl5>
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00b8) $display("Test 47 passed");
+    else $display("Test 47 FAILED");
+
+    // b8: 37397c63 bgeu x18,x19,430 <lbl_bgeu> # 0xffff_ffff > 1 -> branch taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_0430) $display("Test 48 passed");
+    else $display("Test 48 FAILED");
+
+    // 430: c8dff06f jal x0,bc <lbl6>
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00bc) $display("Test 49 passed");
+    else $display("Test 49 FAILED");
+
+    // bc: 355b0663 beq x22,x21,408 <lbl_beq> # 0x1_0000 != 0xffff -> branch not taken 
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00c0) $display("Test 50 passed");
+    else $display("Test 50 FAILED");
+
+    // c0: 355a9463 bne x21,x21,408 <lbl_beq> # 0xffff == 0xffff -> branch not taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00c4) $display("Test 51 passed");
+    else $display("Test 51 FAILED");
+
+    // c4: 355b4a63 blt x22,x21,418 <lbl_blt> # 0x1_0000 > 0xffff -> branch not taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00c8) $display("Test 52 passed");
+    else $display("Test 52 FAILED");
+
+    // c8: 356adc63 bge x21,x22,420 <lbl_bge> # 0xffff < 0x1_0000 -> branch not taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00cc) $display("Test 53 passed");
+    else $display("Test 53 FAILED");
+
+    // cc: 35396e63 bltu x18,x19,428 <lbl_bltu> # 0xffff_ffff > 1 -> branch not taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00d0) $display("Test 54 passed");
+    else $display("Test 54 FAILED");
+
+    // d0: 3729f063 bgeu x19,x18,430 <lbl_bgeu> # 1 < 0xffff_ffff -> branch not taken
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00d4) $display("Test 55 passed");
+    else $display("Test 55 FAILED");
+
+    // d4: 364000ef jal x1,438 <lbl_auipc>
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_0438) $display("Test 56 passed");
+    else $display("Test 56 FAILED");
+
+    // 438: fffff117 auipc x2,0xfffff # 0x0438 + 0xffff_f0000 (-4096) == -3016 = 0xffff_f438
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    #clk_tk;
+    #clk_tk;
+    if (core.registers.mem[2] == 32'hffff_f438) $display("Test 57 passed");
+    else $display("Test 57 FAILED");
+
+    // 43c: 00008067 jalr x0,0(x1)
+    while (core.state != core.STATE_CPU_EXECUTE) #clk_tk;
+    while (core.state != core.STATE_CPU_FETCH) #clk_tk;
+    if (core.pc == 32'h0000_00d8) $display("Test 58 passed");
+    else $display("Test 58 FAILED");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     $finish;
 
   end
