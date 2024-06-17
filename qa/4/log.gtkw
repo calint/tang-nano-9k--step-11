@@ -1,20 +1,20 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Sun Jun 16 19:51:30 2024
+[*] Mon Jun 17 11:15:12 2024
 [*]
 [dumpfile] "/home/c/w/tang-nano-9k--step-11/qa/4/log.vcd"
-[dumpfile_mtime] "Sun Jun 16 19:45:05 2024"
-[dumpfile_size] 30269
+[dumpfile_mtime] "Mon Jun 17 11:08:53 2024"
+[dumpfile_size] 38068
 [savefile] "/home/c/w/tang-nano-9k--step-11/qa/4/log.gtkw"
-[timestart] 100260
+[timestart] 191480
 [size] 1910 1024
 [pos] -1 -1
-*-13.061105 129600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-13.061105 216000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TestBench.
 [treeopen] TestBench.ramio.
 [treeopen] TestBench.ramio.uarttx.
 [sst_width] 269
-[signals_width] 244
+[signals_width] 303
 [sst_expanded] 1
 [sst_vpaned_height] 304
 @28
@@ -26,7 +26,6 @@ TestBench.read_type[2:0]
 TestBench.address[31:0]
 @28
 TestBench.read_type[2:0]
-@29
 TestBench.write_type[1:0]
 @22
 TestBench.data_in[31:0]
@@ -34,19 +33,6 @@ TestBench.data_out[31:0]
 @28
 TestBench.data_out_ready
 TestBench.busy
-TestBench.data_out_ready
-TestBench.br_busy
-@200
--ramio
-@28
-TestBench.ramio.busy
-@22
-TestBench.ramio.uartrx_data[7:0]
-@28
-TestBench.ramio.uartrx_go
-TestBench.ramio.uartrx_dr
-TestBench.ramio.uarttx_bsy
-TestBench.ramio.uarttx_go
 @200
 -burst ram
 @28

@@ -1,4 +1,3 @@
-// generated - do not edit
-volatile unsigned char *leds = (unsigned char *)0xffffffff;
-volatile unsigned char *uart_out = (unsigned char *)0xfffffffe;
-volatile unsigned char *uart_in = (unsigned char *)0xfffffffd;
+#define leds ((unsigned char volatile *)0xffffffff)
+#define uart_out ((unsigned char volatile *)0xfffffffe)
+#define uart_in ((unsigned char volatile *)0xfffffffd)

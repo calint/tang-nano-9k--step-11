@@ -10,8 +10,8 @@ step-wise development towards a RISC-V rv32i implementation supporting cache of 
       => cache.enable added
 [ ] fix truncation warnings
 [ ] update test Cache (write_enable && line_dirty) to (line_dirty)
-[ ] update RAMIO issue lh from {24{}} to {16{}} 
-[ ] step 11: adapt riscv core (multi-cycle simplest way forward)
+[x] update RAMIO issue lh from {24{}} to {16{}} 
+[x] step 11: adapt riscv core (multi-cycle simplest way forward with ad-hoc pipe-lining)
 [ ] step 12: pipe-lined core
 
 ```

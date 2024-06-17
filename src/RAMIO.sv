@@ -17,7 +17,7 @@ module RAMIO #(
     parameter CLK_FREQ = 20_250_000,
     parameter BAUD_RATE = 9600,
     parameter TOP_ADDRESS = {ADDRESS_BITWIDTH{1'b1}},
-    parameter ADDRESS_LEDS = TOP_ADDRESS,
+    parameter ADDRESS_LED = TOP_ADDRESS,
     parameter ADDRESS_UART_OUT = TOP_ADDRESS - 1,
     parameter ADDRESS_UART_IN = TOP_ADDRESS - 2
     // note: received byte must be read with 'lbu'
@@ -68,8 +68,15 @@ module RAMIO #(
   wire ram_busy;
   wire ram_data_out_ready;
 
-  assign busy = address == ADDRESS_UART_OUT || address == ADDRESS_UART_IN ? 0 : ram_busy;
-  assign data_out_ready = address == ADDRESS_UART_OUT || address == ADDRESS_UART_IN ? 1 : ram_data_out_ready;
+  assign busy = address == ADDRESS_UART_OUT || 
+                address == ADDRESS_UART_IN || 
+                address == ADDRESS_LED 
+                ? 0 : ram_busy;
+
+  assign data_out_ready = address == ADDRESS_UART_OUT || 
+                          address == ADDRESS_UART_IN ||
+                          address == ADDRESS_LED
+                          ? 1 : ram_data_out_ready;
 
   // byte addressed into cache
   reg [ADDRESS_BITWIDTH-1:0] ram_address;
@@ -93,7 +100,7 @@ module RAMIO #(
     ram_enable = 0;
     ram_write_enable = 0;
     ram_data_in = 0;
-    if (address == ADDRESS_UART_OUT || address == ADDRESS_UART_IN || address == ADDRESS_LEDS) begin
+    if (address == ADDRESS_UART_OUT || address == ADDRESS_UART_IN || address == ADDRESS_LED) begin
       // don't trigger cache when accessing I/O
     end else begin
       // enable RAM
@@ -151,7 +158,7 @@ module RAMIO #(
   //
 
   // data being written
-  reg [7:0] uarttx_data;
+  reg [7:0] uarttx_data_sending;
 
   // enabled to start sending and disabled to acknowledge that data has been sent
   reg uarttx_go;
@@ -173,10 +180,10 @@ module RAMIO #(
   reg uartrx_go;
 
   // complete data from 'uartrx_data' when 'uartrx_dr' (data ready) enabled
-  reg [7:0] uartrx_data_read;
+  reg [7:0] uartrx_data_received;
 
   // 
-  // convert 'data_in' to 4 bytes enabled RAM and I/O
+  // convert RAM data out according to 'read_type'
   //
   always_comb begin
 `ifdef DBG
@@ -186,10 +193,10 @@ module RAMIO #(
     // create the 'data_out' based on the 'address'
     if (address == ADDRESS_UART_OUT && read_type == 3'b001) begin
       // read unsigned byte from uart_tx
-      data_out = {{24{1'b0}}, uarttx_data};
+      data_out = {{24{1'b0}}, uarttx_data_sending};
     end else if (address == ADDRESS_UART_IN && read_type == 3'b001) begin
       // read unsigned byte from uart_rx
-      data_out = {{24{1'b0}}, uartrx_data_read};
+      data_out = {{24{1'b0}}, uartrx_data_received};
     end else begin
       casex (read_type)
         3'bx01: begin  // byte
@@ -232,18 +239,18 @@ module RAMIO #(
   always_ff @(posedge clk, negedge rst_n) begin
     if (!rst_n) begin
       led <= 4'b1111;  // turn off all leds
-      uarttx_data <= 0;
+      uarttx_data_sending <= 0;
       uarttx_go <= 0;
-      uartrx_data_read <= 0;
+      uartrx_data_received <= 0;
       uartrx_go <= 1;
     end else begin
       // if read from UART then reset the read data
       if (address == ADDRESS_UART_IN && read_type == 3'b001) begin
-        uartrx_data_read <= 0;
+        uartrx_data_received <= 0;
       end
       // if uart has data ready then copy the data from uart and acknowledge (uartrx_go = 0)
       if (uartrx_dr && uartrx_go) begin
-        uartrx_data_read <= uartrx_data;
+        uartrx_data_received <= uartrx_data;
         uartrx_go <= 0;
       end
       // if previous cycle acknowledged receiving data then start receiving next data (uartrx_go = 1)
@@ -251,18 +258,18 @@ module RAMIO #(
         uartrx_go <= 1;
       end
       // if uart done sending data then acknowledge (uarttx_go = 0)
-      if (!uarttx_bsy && uarttx_go) begin
-        uarttx_data <= 0;
-        uarttx_go   <= 0;
+      if (uarttx_go && !uarttx_bsy) begin
+        uarttx_go <= 0;
+        uarttx_data_sending <= 0;
       end
       // if writing to leds
-      if (address == ADDRESS_LEDS && write_type == 2'b01) begin
+      if (address == ADDRESS_LED && write_type == 2'b01) begin
         led <= data_in[3:0];
       end
       // if writing to uart
       if (address == ADDRESS_UART_OUT && write_type == 2'b01) begin
-        uarttx_data <= data_in[7:0];
-        uarttx_go   <= 1;
+        uarttx_data_sending <= data_in[7:0];
+        uarttx_go <= 1;
       end
     end
   end
@@ -299,7 +306,7 @@ module RAMIO #(
   ) uarttx (
       .rst_n(rst_n),
       .clk(clk),
-      .data(uarttx_data),  // data to send
+      .data(uarttx_data_sending),  // data to send
       .go(uarttx_go),  // enable to start transmission, disable after 'data' has been read
       .tx(uart_tx),  // uart tx wire
       .bsy(uarttx_bsy)  // enabled while sendng

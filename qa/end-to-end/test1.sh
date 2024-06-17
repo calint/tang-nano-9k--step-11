@@ -2,6 +2,8 @@
 set -e
 set -x
 
+cd $(dirname "$0")
+
 TTY=/dev/ttyUSB1
 SLP=1
 

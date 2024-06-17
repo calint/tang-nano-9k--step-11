@@ -258,7 +258,7 @@ module TestBench;
 
     #clk_tk;
 
-    if (ramio.uarttx_data == 0) $display("Test 18 passed");
+    if (ramio.uarttx_data_sending == 0) $display("Test 18 passed");
     else $display("Test 18 FAILED");
 
     // read from UART
