@@ -66,6 +66,7 @@ module Core #(
   localparam STATE_CPU_EXECUTE = 8;
   localparam STATE_CPU_STORE = 9;
   localparam STATE_CPU_LOAD = 10;
+  localparam STATE_CPU_LOAD_DONE = 11;
 
   reg [3:0] state = 0;
   reg [3:0] return_state = 0;
@@ -216,6 +217,8 @@ module Core #(
         end
 
         STATE_CPU_FETCH: begin
+          // if register write during this cycle, turn it off at next
+          rd_we <= 0;
           if (ramio_data_out_ready) begin
 
 `ifdef DBG
@@ -420,13 +423,21 @@ module Core #(
             // write register
             rd_we <= 1;
             rd_wd <= ramio_data_out;
-            // next instruction
-            ramio_enable <= 1;
-            ramio_read_type <= 3'b111;
-            ramio_write_type <= 0;
-            ramio_address <= pc;
-            state <= STATE_CPU_FETCH;
+`ifdef DBG
+            $display("write register[%0d] = 0x%h", rd, ramio_data_out);
+`endif
+            state <= STATE_CPU_LOAD_DONE;
           end
+        end
+
+        STATE_CPU_LOAD_DONE: begin
+          // next instruction
+          rd_we <= 0;
+          ramio_enable <= 1;
+          ramio_read_type <= 3'b111;
+          ramio_write_type <= 0;
+          ramio_address <= pc;
+          state <= STATE_CPU_FETCH;
         end
 
       endcase

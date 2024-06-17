@@ -64,7 +64,12 @@ module RAMIO #(
 );
 
   // enables / disables RAM operation
-  reg ram_enable;
+  reg  ram_enable;
+  wire ram_busy;
+  wire ram_data_out_ready;
+
+  assign busy = address == ADDRESS_UART_OUT || address == ADDRESS_UART_IN ? 0 : ram_busy;
+  assign data_out_ready = address == ADDRESS_UART_OUT || address == ADDRESS_UART_IN ? 1 : ram_data_out_ready;
 
   // byte addressed into cache
   reg [ADDRESS_BITWIDTH-1:0] ram_address;
@@ -273,10 +278,10 @@ module RAMIO #(
       .enable(ram_enable),
       .address(ram_address),
       .data_out(ram_data_out),
-      .data_out_ready(data_out_ready),
+      .data_out_ready(ram_data_out_ready),
       .data_in(ram_data_in),
       .write_enable(ram_write_enable),
-      .busy(busy),
+      .busy(ram_busy),
 
       // burst ram wiring; prefix 'br_'
       .br_cmd(br_cmd),

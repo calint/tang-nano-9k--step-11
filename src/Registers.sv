@@ -1,5 +1,5 @@
 `default_nettype none
-//`define DBG
+// `define DBG
 
 module Registers #(
     parameter ADDR_WIDTH = 5,
@@ -23,8 +23,10 @@ module Registers #(
 
   always @(posedge clk) begin
 `ifdef DBG
-    $display("%0t: clk+: Registers (rs1,rs2,rd)=(%0h,%0h,%0h,%0d,%0h)", $time, rs1, rs2, rd, rd_we,
-             rd_wd);
+    if (rd_we) begin
+      $display("%0t: clk+: Registers (rs1,rs2,rd,we,rd_dat)=(%0h,%0h,%0h,%0d,%0h)", $time, rs1,
+               rs2, rd, rd_we, rd_wd);
+    end
 `endif
     if (rd_we) mem[rd] <= rd_wd;
   end

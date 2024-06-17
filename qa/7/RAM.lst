@@ -9,29 +9,40 @@ Disassembly of section .text:
        4:	004000ef          	jal	x1,8 <run>
 
 00000008 <run>:
-       8:	ff010113          	addi	x2,x2,-16 # fff0 <__global_pointer$+0xbc0c>
+       8:	ff010113          	addi	x2,x2,-16 # fff0 <__global_pointer$+0xd75c>
        c:	00112623          	sw	x1,12(x2)
       10:	00812423          	sw	x8,8(x2)
       14:	01010413          	addi	x8,x2,16
       18:	00000513          	addi	x10,x0,0
       1c:	00000097          	auipc	x1,0x0
-      20:	010080e7          	jalr	x1,16(x1) # 2c <loop+0x8>
-
-00000024 <loop>:
+      20:	01c080e7          	jalr	x1,28(x1) # 38 <run+0x30>
       24:	00000013          	addi	x0,x0,0
-      28:	ffdff06f          	jal	x0,24 <loop>
-      2c:	fc010113          	addi	x2,x2,-64
-      30:	02112e23          	sw	x1,60(x2)
-      34:	02812c23          	sw	x8,56(x2)
-      38:	04010413          	addi	x8,x2,64
-      3c:	fca42623          	sw	x10,-52(x8)
-      40:	fcc42783          	lw	x15,-52(x8)
-      44:	fef42423          	sw	x15,-24(x8)
-      48:	000037b7          	lui	x15,0x3
-      4c:	be07a783          	lw	x15,-1056(x15) # 2be0 <loop+0x2bbc>
-      50:	fe842703          	lw	x14,-24(x8)
-      54:	0ff77713          	andi	x14,x14,255
-      58:	00e78023          	sb	x14,0(x15)
-      5c:	00008067          	jalr	x0,0(x1)
+      28:	00c12083          	lw	x1,12(x2)
+      2c:	00812403          	lw	x8,8(x2)
+      30:	01010113          	addi	x2,x2,16
+      34:	00008067          	jalr	x0,0(x1)
+      38:	fd010113          	addi	x2,x2,-48
+      3c:	02812623          	sw	x8,44(x2)
+      40:	03010413          	addi	x8,x2,48
+      44:	fca42e23          	sw	x10,-36(x8)
+      48:	fdc42783          	lw	x15,-36(x8)
+      4c:	fef42423          	sw	x15,-24(x8)
+      50:	000017b7          	lui	x15,0x1
+      54:	0907a783          	lw	x15,144(x15) # 1090 <run+0x1088>
+      58:	fe842703          	lw	x14,-24(x8)
+      5c:	0ff77713          	andi	x14,x14,255
+      60:	00e78023          	sb	x14,0(x15)
+      64:	fe042623          	sw	x0,-20(x8)
+      68:	00000013          	addi	x0,x0,0
+      6c:	fec42783          	lw	x15,-20(x8)
+      70:	fff78713          	addi	x14,x15,-1
+      74:	fee42623          	sw	x14,-20(x8)
+      78:	00078463          	beq	x15,x0,80 <run+0x78>
+      7c:	ff1ff06f          	jal	x0,6c <run+0x64>
+      80:	00000013          	addi	x0,x0,0
+      84:	00000013          	addi	x0,x0,0
+      88:	02c12403          	lw	x8,44(x2)
+      8c:	03010113          	addi	x2,x2,48
+      90:	00008067          	jalr	x0,0(x1)
 	...
-    2be0:	ffffffff          	.word	0xffffffff
+    1090:	ffffffff          	.word	0xffffffff

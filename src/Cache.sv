@@ -149,7 +149,7 @@ module Cache #(
 
   // select data from requested column
   assign data_out = column_data_out[column_ix];
-  assign data_out_ready = write_enable ? 0 : cache_line_hit;
+  assign data_out_ready = write_enable ? 0 : enable && cache_line_hit;
 
   // 8 instances of byte enabled semi dual port RAM blocks
   // if cache hit at write then connect 'data_in' to the column
