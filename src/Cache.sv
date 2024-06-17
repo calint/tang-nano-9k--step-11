@@ -22,7 +22,7 @@ module Cache #(
     // the clock cycles delay between commands
     // see: IPUG943-1.2E Gowin PSRAM Memory Interface HS & HS 2CH IP
     //      page 10
-    parameter COMMAND_DELAY_INTERVAL = 16,
+    parameter COMMAND_DELAY_INTERVAL = 13,
     // note: 1 less than spec because the counter starts 1 cycle late (13)
 
     parameter RAM_ADDRESSING_MODE = 0
