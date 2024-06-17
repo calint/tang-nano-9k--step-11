@@ -3,3 +3,5 @@
 /impl
 *.vvp
 *.vcd
+/__pycache__
+/.mypy_cache
