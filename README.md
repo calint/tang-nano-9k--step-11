@@ -1,5 +1,7 @@
 # Tang Nano 9K
 
+> :bell: continued in https://github.com/calint/tang-nano-9k--riscv--cache-psram
+
 step-wise development towards a RISC-V rv32i implementation supporting cache of PSRAM
 
 ## todo
