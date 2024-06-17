@@ -15,5 +15,6 @@ step-wise development towards a RISC-V rv32i implementation supporting cache of 
 [x] update RAMIO issue lh from {24{}} to {16{}} 
 [x] step 11: adapt riscv core (multi-cycle simplest way forward with ad-hoc pipe-lining)
 [ ] step 12: pipe-lined core
+[ ] dual-channel PSRAM cache with 64 B cache-lines
 
 ```

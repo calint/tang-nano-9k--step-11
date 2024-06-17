@@ -2,7 +2,7 @@
 //
 `default_nettype none
 
-`include "Configuration.v"
+`include "Configuration.sv"
 
 module Top (
     input wire sys_clk,  // 27 MHz
