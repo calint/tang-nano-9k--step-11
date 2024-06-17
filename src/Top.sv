@@ -25,6 +25,11 @@ module Top (
     output reg  flash_cs
 );
 
+  localparam CPU_FREQUENCY_MHZ = 37_500_000;
+  localparam UART_BAUD_RATE = 9600;
+  localparam RAM_DEPTH_BITWIDTH = 21;
+  localparam CACHE_LINE_IX_BITWIDTH = 5;
+
   // ----------------------------------------------------------
   // -- Gowin_rPLLs
   // ----------------------------------------------------------
@@ -41,9 +46,6 @@ module Top (
       .clkoutp(rpll_clkoutp),  // clkout 75 MHz 90 degrees phased
       .clkoutd(rpll_clkoutd)  // clkout / 4 = 18.75 MHz (IPUG943-1.2E page 15)
   );
-
-  localparam FREQ = 37_500_000;
-  localparam BAUD = 9600;
 
   // ----------------------------------------------------------
   // -- PSRAM_Memory_Interface_HS_V2_Top
@@ -89,8 +91,6 @@ module Top (
       .O_psram_reset_n(O_psram_reset_n)
   );
 
-  localparam RAM_DEPTH_BITWIDTH = 21;
-
   // ----------------------------------------------------------
   // -- RAMIO
   // ----------------------------------------------------------
@@ -106,9 +106,9 @@ module Top (
   RAMIO #(
       .RAM_DEPTH_BITWIDTH(RAM_DEPTH_BITWIDTH),
       .RAM_ADDRESSING_MODE(0),  // addressing 8 bit words
-      .CACHE_LINE_IX_BITWIDTH(5),
-      .CLK_FREQ(FREQ),
-      .BAUD_RATE(BAUD)
+      .CACHE_LINE_IX_BITWIDTH(CACHE_LINE_IX_BITWIDTH),
+      .CLK_FREQ(CPU_FREQUENCY_MHZ),
+      .BAUD_RATE(UART_BAUD_RATE)
   ) ramio (
       .rst_n(sys_rst_n && rpll_lock && br_init_calib),
       .clk  (br_clk_out),
