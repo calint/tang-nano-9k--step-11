@@ -1,5 +1,3 @@
-#include "os_config.h"
-
 #define CHAR_BACKSPACE 0x7f
 #define CHAR_CARRIAGE_RETURN 0x0d
 #define LOCATION_MAX_OBJECTS 128
@@ -8,6 +6,12 @@
 #define ENTITY_MAX_OBJECTS 32
 #define TRUE 1
 #define FALSE 0
+
+// I/O addresses mapped to RAM
+//  note. specified in 'SoC.v' at instantiation of 'RAM_Interface'
+volatile unsigned char *leds = (unsigned char *)0x1ffff;
+volatile unsigned char *uart_out = (unsigned char *)0x1fffe;
+volatile unsigned char *uart_in = (unsigned char *)0x1fffd;
 
 void uart_send_str(const char *str);
 void uart_send_char(char ch);
@@ -22,7 +26,7 @@ typedef unsigned char object_id;
 typedef unsigned char entity_id;
 typedef unsigned char direction;
 
-static char *hello = "welcome to adventure #4\r\n    type 'help'\r\n\r\n";
+static char *hello = "welcome to adventure #3\r\n    type 'help'\r\n\r\n";
 
 typedef struct input_buffer {
   char line[80];
@@ -72,7 +76,6 @@ void action_give(entity_id eid, name obj, name to_ent);
 void action_go(entity_id eid, direction dir);
 void action_drop(entity_id eid, name obj);
 void action_take(entity_id eid, name obj);
-void action_mem_test();
 void input(input_buffer *buf);
 void handle_input(entity_id eid, input_buffer *buf);
 bool strings_equal(const char *s1, const char *s2);
@@ -156,8 +159,6 @@ void handle_input(entity_id eid, input_buffer *buf) {
       return;
     }
     action_give(eid, words[1], words[2]);
-  } else if (strings_equal(words[0], "m")) {
-    action_mem_test();
   } else {
     uart_send_str("not understood\r\n\r\n");
   }
@@ -392,26 +393,6 @@ void action_give(entity_id eid, name obj, name to_ent) {
   uart_send_str(" is not here\r\n\r\n");
 }
 
-void action_mem_test() {
-  uart_send_str("testing memory (write)\r\n");
-  char *ptr = (char *)0x10000;
-  const char *end = (char *)0x100000;
-  char ch = 0;
-  while (ptr < end) {
-    *ptr++ = ch++;
-  }
-  uart_send_str("testing memory (read)\r\n");
-  ptr = (char *)0x10000;
-  ch = 0;
-  while (ptr < end) {
-    if (*ptr++ != ch++) {
-      uart_send_str("!!! memory test failed\r\n");
-      return;
-    }
-  }
-  uart_send_str("memory test succeeded\r\n");
-}
-
 void print_help() {
   uart_send_str(
       "\r\ncommand:\r\n  n: go north\r\n  e: go east\r\n  s: go south\r\n  w: "
@@ -440,7 +421,7 @@ void input(input_buffer *buf) {
       buf->ix++;
       uart_send_char(ch);
     }
-    *leds = ~buf->ix;
+    *leds = buf->ix | 0x70; // rgb bits enabled to turn off led
   }
 }
 
@@ -463,12 +444,12 @@ void uart_send_str(const char *str) {
   }
 }
 
-void uart_send_hex_byte(const char ch) {
+void uart_send_hex_byte(char ch) {
   uart_send_hex_nibble((ch & 0xf0) >> 4);
   uart_send_hex_nibble(ch & 0x0f);
 }
 
-void uart_send_hex_nibble(const char nibble) {
+void uart_send_hex_nibble(char nibble) {
   if (nibble < 10) {
     uart_send_char('0' + nibble);
   } else {
@@ -476,7 +457,7 @@ void uart_send_hex_nibble(const char nibble) {
   }
 }
 
-void uart_send_char(const char ch) {
+void uart_send_char(char ch) {
   while (*uart_out)
     ;
   *uart_out = ch;
